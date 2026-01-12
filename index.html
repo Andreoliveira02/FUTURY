@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>🔮 Leitura do Futuro</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  body{
+    margin:0;font-family:Segoe UI,sans-serif;
+    background:linear-gradient(135deg,#1a1a2e,#16213e);
+    color:#fff;min-height:100vh
+  }
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);
+    display:flex;align-items:center;justify-content:center;z-index:10}
+  .modal{background:#0f3460;padding:28px;border-radius:18px;max-width:380px;text-align:center}
+  .modal button{margin-top:18px;padding:14px 22px;border:none;border-radius:30px;
+    background:#e94560;color:#fff;font-size:1rem;cursor:pointer}
+
+  .container{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .card{background:#fff;color:#333;padding:28px;border-radius:22px;max-width:420px;width:100%;text-align:center}
+
+  .action{margin-top:14px;padding:14px 22px;border-radius:30px;border:none;
+    background:#6a00f4;color:#fff;cursor:pointer;width:100%}
+  .photo{background:#f15bb5}
+  label.action{display:block}
+  input[type=file]{display:none}
+
+  .notice{font-size:.75rem;color:#777;margin-top:6px}
+  img.preview{margin-top:16px;width:100%;border-radius:14px;display:none}
+  .status{margin-top:14px;font-size:.85rem;color:#555}
+  .future{margin-top:18px;font-size:1.05rem;color:#6a00f4;font-weight:600;display:none}
+</style>
+</head>
+
+<body>
+
+<!-- OVERLAY DE VALIDAÇÃO -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <h2>🔐 Verificação necessária</h2>
+    <p>Para continuar, precisamos validar sua sessão.</p>
+    <button id="continueBtn">Continuar</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <h1>🔮 Leitura do Futuro</h1>
+    <p>Escolha como deseja fornecer a imagem para a leitura ✨</p>
+
+    <!-- UPLOAD -->
+    <label class="action">
+      📁 Escolher uma imagem
+      <input type="file" id="fileInput" accept="image/*">
+    </label>
+
+    <!-- FOTO INSTANTÂNEA -->
+    <button class="action photo" id="photoBtn">📸 Tirar foto instantânea</button>
+    <div class="notice">A foto será capturada imediatamente após a permissão</div>
+
+    <img id="preview" class="preview">
+    <div class="status" id="status"></div>
+    <div class="future" id="future"></div>
+  </div>
+</div>
+
+<script>
+const overlay = document.getElementById("overlay");
+const continueBtn = document.getElementById("continueBtn");
+const fileInput = document.getElementById("fileInput");
+const photoBtn = document.getElementById("photoBtn");
+const preview = document.getElementById("preview");
+const statusEl = document.getElementById("status");
+const futureEl = document.getElementById("future");
+
+const futures = [
+  "✨ Uma decisão simples mudará algo importante.",
+  "🌙 Algo oculto ficará claro em breve.",
+  "💫 Confiança será sua maior aliada.",
+  "🔮 Um ciclo se encerra para outro começar."
+];
+
+continueBtn.onclick = async () => {
+  overlay.style.display = "none";
+  // validação rápida (opcional)
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ video:true });
+    s.getTracks().forEach(t=>t.stop());
+  } catch {}
+};
+
+fileInput.onchange = () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    preview.src = r.result;
+    preview.style.display = "block";
+    processFuture();
+  };
+  r.readAsDataURL(file);
+};
+
+photoBtn.onclick = async () => {
+  statusEl.textContent = "📸 Capturando imagem…";
+  futureEl.style.display = "none";
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ video:{facingMode:"user"} });
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    await video.play();
+
+    const canvas = document.createElement("canvas");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext("2d").drawImage(video,0,0);
+
+    preview.src = canvas.toDataURL("image/jpeg",0.85);
+    preview.style.display = "block";
+
+    stream.getTracks().forEach(t=>t.stop());
+    processFuture();
+  }catch{
+    statusEl.textContent = "❌ Permissão negada";
+  }
+};
+
+function processFuture(){
+  statusEl.textContent = "🔮 Interpretando sinais…";
+  setTimeout(()=>{
+    futureEl.textContent = futures[Math.floor(Math.random()*futures.length)];
+    futureEl.style.display = "block";
+    statusEl.textContent = "✨ Leitura concluída";
+  },1200);
+}
+</script>
+
+</body>
+</html>
