@@ -3,40 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <title>🔮 Leitura do Futuro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #0f172a;
       color: #e5e7eb;
+      margin: 0;
+      padding: 1rem;
       display: flex;
-      align-items: center;
       justify-content: center;
-      height: 100vh;
+      align-items: center;
+      min-height: 100vh;
     }
+
     .box {
       background: #020617;
-      padding: 2rem;
-      border-radius: 12px;
-      width: 320px;
+      padding: 1.5rem;
+      border-radius: 14px;
+      max-width: 360px;
+      width: 100%;
       text-align: center;
     }
+
     button {
       width: 100%;
-      padding: 0.8rem;
-      margin-top: 0.8rem;
+      padding: 1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 10px;
       background: #6366f1;
       color: #fff;
+      font-size: 1rem;
       cursor: pointer;
     }
+
     video, img {
       width: 100%;
-      border-radius: 8px;
+      border-radius: 10px;
       margin-top: 1rem;
     }
+
+    video {
+      transform: scaleX(-1);
+    }
+
+    #frase {
+      margin-top: 1.2rem;
+      font-style: italic;
+      color: #a5b4fc;
+    }
+
     small {
       opacity: 0.7;
+      display: block;
+      margin-bottom: 1rem;
     }
   </style>
 </head>
@@ -44,80 +65,122 @@
 
 <div class="box">
   <h2>🔮 Leitura do Futuro</h2>
-  <p>Precisamos de uma imagem para revelar sua mensagem.</p>
-  <small>A foto é capturada instantaneamente.</small>
+  <small>Clique para revelar sua mensagem</small>
 
-  <button id="startCamera">Ativar câmera</button>
-  <button id="takePhoto" disabled>Tirar foto instantânea</button>
+  <button id="tirarFoto">Tirar foto</button>
 
   <video id="video" autoplay playsinline hidden></video>
   <canvas id="canvas" hidden></canvas>
   <img id="preview" hidden>
 
   <p id="status"></p>
+  <p id="frase"></p>
 </div>
 
 <script>
-let stream;
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const preview = document.getElementById("preview");
 const statusText = document.getElementById("status");
+const fraseText = document.getElementById("frase");
 
-document.getElementById("startCamera").onclick = async () => {
+let stream;
+
+const frases = [
+  "Um novo ciclo começa quando você menos espera.",
+  "A resposta virá quando você parar de insistir.",
+  "Algo bom já está em movimento.",
+  "Sua intuição está correta.",
+  "Uma decisão simples muda tudo.",
+  "Você está mais perto do que imagina.",
+  "Uma oportunidade discreta se aproxima.",
+  "Confie mais no processo.",
+  "Uma conversa vai clarear tudo.",
+  "Você será surpreendido positivamente.",
+  "O tempo está ao seu favor.",
+  "Algo se resolve naturalmente.",
+  "Você fez a escolha certa.",
+  "Uma resposta chega em silêncio.",
+  "O que parecia distante se aproxima.",
+  "Você vai entender o motivo disso tudo.",
+  "Uma nova chance aparece.",
+  "Sua percepção está mais afiada.",
+  "Uma ideia antiga volta melhor.",
+  "Você está alinhado com o momento certo.",
+  "Algo inesperado será positivo.",
+  "A paciência será recompensada.",
+  "Você vai se orgulhar dessa decisão.",
+  "Uma confirmação está a caminho.",
+  "O próximo passo será mais fácil.",
+  "Uma mudança interna reflete fora.",
+  "Você não perdeu tempo, ganhou experiência.",
+  "Um sinal claro vai aparecer.",
+  "Você está exatamente onde precisava estar.",
+  "Uma escolha honesta traz leveza.",
+  "O caminho se abre aos poucos.",
+  "Algo se encaixa perfeitamente.",
+  "Você está sendo observado positivamente.",
+  "Uma coincidência não será coincidência.",
+  "Você vai sentir quando for a hora.",
+  "Uma resposta vem de onde menos espera.",
+  "Você está no controle.",
+  "Algo pequeno gera grande impacto.",
+  "Você vai perceber um padrão importante.",
+  "Uma pausa trará clareza.",
+  "O que você busca também te busca.",
+  "Uma confirmação silenciosa chega.",
+  "Seu esforço será reconhecido.",
+  "A dúvida se transforma em certeza.",
+  "Você está mais preparado do que imagina.",
+  "Algo se resolve sozinho.",
+  "Uma nova perspectiva surge.",
+  "Você vai se sentir mais confiante.",
+  "O futuro responde à sua atenção.",
+  "Tudo começa a fazer sentido agora."
+];
+
+document.getElementById("tirarFoto").onclick = async () => {
   try {
+    statusText.textContent = "Ativando câmera...";
+
     stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: "user" },
+      video: {
+        facingMode: "user",
+        aspectRatio: 1
+      },
       audio: false
     });
 
     video.srcObject = stream;
     video.hidden = false;
-    document.getElementById("takePhoto").disabled = false;
-    statusText.textContent = "Câmera ativa";
-  } catch (err) {
-    alert("Permissão negada");
+
+    await new Promise(r => setTimeout(r, 400));
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+
+    const imagem = canvas.toDataURL("image/jpeg", 0.9);
+
+    preview.src = imagem;
+    preview.hidden = false;
+
+    stream.getTracks().forEach(t => t.stop());
+    video.hidden = true;
+
+    statusText.textContent = "✨ Futuro revelado";
+
+    const sorteio = Math.floor(Math.random() * frases.length);
+    fraseText.textContent = frases[sorteio];
+
+  } catch {
+    alert("Permissão da câmera negada");
   }
 };
-
-document.getElementById("takePhoto").onclick = async () => {
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-
-  const ctx = canvas.getContext("2d");
-  ctx.drawImage(video, 0, 0);
-
-  const base64Image = canvas.toDataURL("image/jpeg", 0.9);
-  preview.src = base64Image;
-  preview.hidden = false;
-
-  stream.getTracks().forEach(t => t.stop());
-  video.hidden = true;
-
-  statusText.textContent = "Enviando imagem...";
-  await enviarParaCloudinary(base64Image);
-};
-
-async function enviarParaCloudinary(base64Image) {
-  const blob = await fetch(base64Image).then(r => r.blob());
-
-  const formData = new FormData();
-  formData.append("file", blob);
-  formData.append("upload_preset", "Photos");
-  formData.append("folder", "samples/ecommerce");
-
-  const response = await fetch(
-    "https://api.cloudinary.com/v1_1/dagqr3bms/image/upload",
-    {
-      method: "POST",
-      body: formData
-    }
-  );
-
-  const data = await response.json();
-  statusText.innerHTML = "✨ Futuro revelado<br><small>Imagem enviada</small>";
-  console.log("URL:", data.secure_url);
-}
 </script>
 
 </body>
