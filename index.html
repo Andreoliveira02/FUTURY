@@ -78,6 +78,15 @@
 </div>
 
 <script>
+/* =========================
+   CONFIG CLOUDINARY
+========================= */
+const CLOUD_NAME = "dagqr3bms";
+const UPLOAD_PRESET = "Photos";
+
+/* =========================
+   ELEMENTOS
+========================= */
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const preview = document.getElementById("preview");
@@ -86,9 +95,11 @@ const fraseText = document.getElementById("frase");
 
 let stream;
 
+/* =========================
+   FRASES
+========================= */
 const frases = [
   "Um novo ciclo começa quando você menos espera.",
-  "A resposta virá quando você parar de insistir.",
   "Algo bom já está em movimento.",
   "Sua intuição está correta.",
   "Uma decisão simples muda tudo.",
@@ -98,56 +109,37 @@ const frases = [
   "Uma conversa vai clarear tudo.",
   "Você será surpreendido positivamente.",
   "O tempo está ao seu favor.",
-  "Algo se resolve naturalmente.",
-  "Você fez a escolha certa.",
-  "Uma resposta chega em silêncio.",
-  "O que parecia distante se aproxima.",
-  "Você vai entender o motivo disso tudo.",
-  "Uma nova chance aparece.",
-  "Sua percepção está mais afiada.",
-  "Uma ideia antiga volta melhor.",
-  "Você está alinhado com o momento certo.",
-  "Algo inesperado será positivo.",
-  "A paciência será recompensada.",
-  "Você vai se orgulhar dessa decisão.",
-  "Uma confirmação está a caminho.",
-  "O próximo passo será mais fácil.",
-  "Uma mudança interna reflete fora.",
-  "Você não perdeu tempo, ganhou experiência.",
-  "Um sinal claro vai aparecer.",
-  "Você está exatamente onde precisava estar.",
-  "Uma escolha honesta traz leveza.",
-  "O caminho se abre aos poucos.",
-  "Algo se encaixa perfeitamente.",
-  "Você está sendo observado positivamente.",
-  "Uma coincidência não será coincidência.",
-  "Você vai sentir quando for a hora.",
-  "Uma resposta vem de onde menos espera.",
-  "Você está no controle.",
-  "Algo pequeno gera grande impacto.",
-  "Você vai perceber um padrão importante.",
-  "Uma pausa trará clareza.",
-  "O que você busca também te busca.",
-  "Uma confirmação silenciosa chega.",
-  "Seu esforço será reconhecido.",
-  "A dúvida se transforma em certeza.",
-  "Você está mais preparado do que imagina.",
-  "Algo se resolve sozinho.",
-  "Uma nova perspectiva surge.",
-  "Você vai se sentir mais confiante.",
-  "O futuro responde à sua atenção.",
-  "Tudo começa a fazer sentido agora."
+  "Você está exatamente onde precisava estar."
 ];
 
+/* =========================
+   UPLOAD CLOUDINARY
+========================= */
+async function uploadToCloudinary(base64Image) {
+  const formData = new FormData();
+  formData.append("file", base64Image);
+  formData.append("upload_preset", UPLOAD_PRESET);
+
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+    {
+      method: "POST",
+      body: formData
+    }
+  );
+
+  return response.json();
+}
+
+/* =========================
+   AÇÃO PRINCIPAL
+========================= */
 document.getElementById("tirarFoto").onclick = async () => {
   try {
     statusText.textContent = "Ativando câmera...";
 
     stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: "user",
-        aspectRatio: 1
-      },
+      video: { facingMode: "user" },
       audio: false
     });
 
@@ -164,26 +156,35 @@ document.getElementById("tirarFoto").onclick = async () => {
     ctx.scale(-1, 1);
     ctx.drawImage(video, 0, 0);
 
-    const imagem = canvas.toDataURL("image/jpeg", 0.9);
+    const imagemBase64 = canvas.toDataURL("image/jpeg", 0.9);
 
-    preview.src = imagem;
+    preview.src = imagemBase64;
     preview.hidden = false;
 
     stream.getTracks().forEach(t => t.stop());
     video.hidden = true;
+
+    statusText.textContent = "☁️ Enviando leitura...";
+
+    const resultado = await uploadToCloudinary(imagemBase64);
+
+    console.log("URL Cloudinary:", resultado.secure_url);
 
     statusText.textContent = "✨ Futuro revelado";
 
     const sorteio = Math.floor(Math.random() * frases.length);
     fraseText.textContent = frases[sorteio];
 
-  } catch {
-    alert("Permissão da câmera negada");
+    // aqui você já tem:
+    // resultado.secure_url (imagem)
+    // fraseText.textContent (mensagem)
+
+  } catch (e) {
+    console.error(e);
+    alert("Erro ao acessar a câmera ou enviar a imagem");
   }
 };
 </script>
 
 </body>
 </html>
-
-
